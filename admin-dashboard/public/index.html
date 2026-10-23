@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Co-Nest Admin Dashboard - Cameroon Trust Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Login Modal -->
+  <div id="login-container" class="auth-wrapper">
+    <div class="auth-card">
+      <h1 class="logo-text">Co_Nest</h1>
+      <h2>Admin Control Center</h2>
+      <p class="auth-sub">Secure transaction monitoring and trust verification registry</p>
+
+      <div class="alert-box error-alert" id="login-error" style="display: none;"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" required placeholder="admin@conest.com">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="login-btn">Secure Login</button>
+      </form>
+      <div class="defenses-logins">
+        <p><strong>Demo Admin:</strong> admin@conest.com / admin123</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Container (Hidden until Auth) -->
+  <div id="dashboard-container" class="dashboard-wrapper" style="display: none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo-text">Co_Nest</h1>
+        <span class="portal-badge">Admin Portal</span>
+      </div>
+      <nav class="sidebar-menu">
+        <a href="#" class="menu-item active" data-tab="tab-overview">📊 Overview Analytics</a>
+        <a href="#" class="menu-item" data-tab="tab-kyc">⏳ KYC Verification Requests</a>
+        <a href="#" class="menu-item" data-tab="tab-users">👤 User Management</a>
+        <a href="#" class="menu-item" data-tab="tab-properties">🏠 Properties & Listings</a>
+        <a href="#" class="menu-item" data-tab="tab-registry">📜 MINDCAF Title Registry</a>
+        <a href="#" class="menu-item" data-tab="tab-payments">💳 Payment Reconciliations</a>
+        <a href="#" class="menu-item" data-tab="tab-chats">💬 Chats Moderator</a>
+      </nav>
+      <div class="sidebar-footer">
+        <p class="admin-name" id="admin-display-name">Admin User</p>
+        <button class="btn btn-danger btn-sm" id="logout-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- Tab 1: Overview -->
+      <section id="tab-overview" class="tab-pane active">
+        <div class="header-row">
+          <h2>Dashboard Overview</h2>
+          <p class="timestamp-display">Cameroon Standard Time (CST)</p>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="card-icon">👥</span>
+            <h3>Total Users</h3>
+            <div class="metric-value" id="metric-users">0</div>
+          </div>
+          <div class="metric-card card-green">
+            <span class="card-icon">🛡️</span>
+            <h3>Verified Users</h3>
+            <div class="metric-value" id="metric-agents">0</div>
+          </div>
+          <div class="metric-card">
+            <span class="card-icon">🏠</span>
+            <h3>Total Listings</h3>
+            <div class="metric-value" id="metric-listings">0</div>
+          </div>
+          <div class="metric-card card-gold">
+            <span class="card-icon">💸</span>
+            <h3>Total Revenue</h3>
+            <div class="metric-value"><span id="metric-revenue">0</span> <span class="currency">FCFA</span></div>
+          </div>
+        </div>
+
+        <!-- Extra detail cards -->
+        <div class="details-row">
+          <div class="details-card">
+            <h3>Recent Actions</h3>
+            <p>Monitors registration validations and Titre Foncier requests. Pending KYC requests: <strong
+                id="metric-pending-kyc" class="highlight-orange">0</strong>.</p>
+            <div style="margin-top: 15px;">
+              <button class="btn btn-primary" id="btn-generate-report">📥 Generate Analytical Report (CSV)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: KYC Reviews -->
+      <section id="tab-kyc" class="tab-pane">
+        <h2>Agent KYC Verification Requests</h2>
+        <p class="subtitle">Approve or reject submitted CNI identities against matching profile names</p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Applicant Name</th>
+                <th>Email</th>
+                <th>CNI Number</th>
+                <th>Account Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="kyc-requests-table">
+              <tr>
+                <td colspan="5" class="text-center">Loading pending requests...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab 3: Users List -->
+      <section id="tab-users" class="tab-pane">
+        <h2>User Accounts Database</h2>
+        <p class="subtitle">System account audit, roles check, and identity flags</p>
+
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+          <button class="btn btn-primary" onclick="showCreateUserForm()">➕ Create New User</button>
+        </div>
+
+        <!-- Create/Edit User Box -->
+        <div class="form-card" id="user-form-card" style="display: none; margin-bottom: 20px;">
+          <h3 id="user-form-title">Create User Account</h3>
+          <form id="user-crud-form">
+            <input type="hidden" id="crud-user-id">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Full Legal Name</label>
+                <input type="text" id="crud-user-fullname" placeholder="Full name" required>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="crud-user-email" placeholder="email@conest.com" required>
+              </div>
+              <div class="form-group" id="crud-password-group">
+                <label>Password</label>
+                <input type="password" id="crud-user-password" placeholder="Password (min 3 chars)">
+              </div>
+              <div class="form-group">
+                <label>Role</label>
+                <select id="crud-user-role"
+                  style="background-color: #0f172a; color: white; padding: 8px; border-radius: 4px; border: 1px solid #334155; width: 100%;">
+                  <option value="BUYER">BUYER</option>
+                  <option value="RENTER">RENTER</option>
+                  <option value="AGENT">AGENT</option>
+                  <option value="ADMIN">ADMIN</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>CNI Number (e.g. AB123456789)</label>
+                <input type="text" id="crud-user-cniref" placeholder="e.g. AB123456789">
+              </div>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+              <button type="submit" class="btn btn-primary">Save User</button>
+              <button type="button" class="btn" style="background-color: #475569;"
+                onclick="hideUserForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>KYC Status</th>
+                <th>CNI Ref</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table">
+              <tr>
+                <td colspan="6" class="text-center">Loading accounts...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab: Properties Management -->
+      <section id="tab-properties" class="tab-pane">
+        <h2>Manage Property Listings</h2>
+        <p class="subtitle">Approve, reject, or delete active listings to prevent real estate listing fraud</p>
+
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between;">
+          <button class="btn btn-primary" onclick="showCreatePropertyForm()">➕ Create Property Listing</button>
+        </div>
+
+        <!-- Create/Edit Property Box -->
+        <div class="form-card" id="property-form-card" style="display: none; margin-bottom: 20px;">
+          <h3 id="property-form-title">Create Property Listing</h3>
+          <form id="property-crud-form">
+            <input type="hidden" id="crud-property-id">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Property Title</label>
+                <input type="text" id="crud-prop-title" placeholder="e.g. Bastos Apartment" required>
+              </div>
+              <div class="form-group">
+                <label>Price (FCFA)</label>
+                <input type="number" id="crud-prop-price" placeholder="Price in FCFA" required>
+              </div>
+              <div class="form-group">
+                <label>City</label>
+                <input type="text" id="crud-prop-city" placeholder="Yaoundé, Douala, etc." required>
+              </div>
+              <div class="form-group">
+                <label>Neighborhood / Quarter</label>
+                <input type="text" id="crud-prop-neighborhood" placeholder="Bastos, Logpom, Molyko" required>
+              </div>
+              <div class="form-group">
+                <label>Land Title Number</label>
+                <input type="text" id="crud-prop-landtitle" placeholder="e.g. TF 1943/Mfoundi" required>
+              </div>
+              <div class="form-group">
+                <label>Type</label>
+                <select id="crud-prop-type"
+                  style="background-color: #0f172a; color: white; padding: 8px; border-radius: 4px; border: 1px solid #334155; width: 100%;">
+                  <option value="APARTMENT">APARTMENT</option>
+                  <option value="STUDIO">STUDIO</option>
+                  <option value="HOUSE">HOUSE</option>
+                  <option value="LAND">LAND</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+              <label>Description</label>
+              <textarea id="crud-prop-desc" rows="3" placeholder="Description details..."
+                style="width: 100%; min-height: 80px;" required></textarea>
+            </div>
+
+            <h4 style="margin-top: 15px; color: #2563eb;">🇨🇲 CITI Infrastructure Trust Index Parameters</h4>
+            <div class="form-grid" style="margin-top: 10px;">
+              <div class="form-group">
+                <label>Water Supply Source</label>
+                <select id="crud-prop-watersource"
+                  style="background-color: #0f172a; color: white; padding: 8px; border-radius: 4px; border: 1px solid #334155; width: 100%;">
+                  <option value="Borehole">Borehole</option>
+                  <option value="Borehole + Camwater">Borehole + Camwater</option>
+                  <option value="Camwater only">Camwater only</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Water Stability (1-5)</label>
+                <input type="number" id="crud-prop-waterrating" min="1" max="5" value="4"
+                  style="width: 100%; padding: 8px; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 4px;">
+              </div>
+              <div class="form-group">
+                <label>Electricity Power Option</label>
+                <select id="crud-prop-elecoption"
+                  style="background-color: #0f172a; color: white; padding: 8px; border-radius: 4px; border: 1px solid #334155; width: 100%;">
+                  <option value="Eneo + Generator">Eneo + Generator</option>
+                  <option value="Eneo Only">Eneo Only</option>
+                  <option value="Solar + Eneo">Solar + Eneo</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Electricity Reliability (1-5)</label>
+                <input type="number" id="crud-prop-elecrating" min="1" max="5" value="4"
+                  style="width: 100%; padding: 8px; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 4px;">
+              </div>
+              <div class="form-group">
+                <label>Road Access Type</label>
+                <select id="crud-prop-roadtype"
+                  style="background-color: #0f172a; color: white; padding: 8px; border-radius: 4px; border: 1px solid #334155; width: 100%;">
+                  <option value="Tarred">Tarred</option>
+                  <option value="Dirt">Dirt</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Road Accessibility (1-5)</label>
+                <input type="number" id="crud-prop-roadrating" min="1" max="5" value="4"
+                  style="width: 100%; padding: 8px; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 4px;">
+              </div>
+              <div class="form-group">
+                <label>Estimated Moto Fare (FCFA)</label>
+                <input type="number" id="crud-prop-motofare" placeholder="e.g. 100" value="100"
+                  style="width: 100%; padding: 8px; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 4px;">
+              </div>
+              <div class="form-group">
+                <label>Proximity to Main Street (m)</label>
+                <input type="number" id="crud-prop-proximity" placeholder="e.g. 50" value="50"
+                  style="width: 100%; padding: 8px; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 4px;">
+              </div>
+              <div class="form-group">
+                <label>Neighborhood Security (1-5)</label>
+                <input type="number" id="crud-prop-security" min="1" max="5" value="4"
+                  style="width: 100%; padding: 8px; background-color: #0f172a; color: white; border: 1px solid #334155; border-radius: 4px;">
+              </div>
+            </div>
+
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+              <button type="submit" class="btn btn-primary">Save Property</button>
+              <button type="button" class="btn" style="background-color: #475569;"
+                onclick="hidePropertyForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Property ID</th>
+                <th>Title</th>
+                <th>City / Quarter</th>
+                <th>Price</th>
+                <th>Agent</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-properties-table">
+              <tr>
+                <td colspan="7" class="text-center">Loading listings...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab 4: MINDCAF Land Titles -->
+      <section id="tab-registry" class="tab-pane">
+        <h2>Simulated MINDCAF Land Titles Registry</h2>
+        <p class="subtitle">Insert authentic land titles (Titre Foncier) into the verifier registry to prevent property
+          allocation fraud</p>
+
+        <div class="form-card">
+          <h3 id="registry-form-title">Register New Titre Foncier</h3>
+          <div class="alert-box success-alert" id="registry-success" style="display: none;">Title successfully
+            registered!</div>
+          <div class="alert-box error-alert" id="registry-error" style="display: none;"></div>
+
+          <form id="registry-form">
+            <input type="hidden" id="tf-id">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="tf-number">Land Title Reference (Titre Foncier)</label>
+                <input type="text" id="tf-number" placeholder="e.g. TF 8920/Wouri" required>
+              </div>
+              <div class="form-group">
+                <label for="tf-owner">Owner Legal Name</label>
+                <input type="text" id="tf-owner" placeholder="Full legal name matches ID" required>
+              </div>
+              <div class="form-group">
+                <label for="tf-date">Registration Date</label>
+                <input type="date" id="tf-date" required>
+              </div>
+              <div class="form-group">
+                <label for="tf-area">Land Area (Square Meters)</label>
+                <input type="number" step="0.01" id="tf-area" placeholder="e.g. 500" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="tf-boundaries">Boundaries Description</label>
+              <textarea id="tf-boundaries" rows="3"
+                placeholder="Description of property coordinates and adjoining properties" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Registry Dispute Caveat Status</label>
+              <div class="radio-row">
+                <label class="radio-label">
+                  <input type="radio" name="tf-status" value="Active" checked id="status-active">
+                  <span class="radio-text text-green">🟢 Active / Clear</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="tf-status" value="Disputed" id="status-disputed">
+                  <span class="radio-text text-red">🔴 Disputed / Under Litigation</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group" id="caveat-details-group" style="display: none;">
+              <label for="tf-caveats">Dispute Warning Caveat Details</label>
+              <textarea id="tf-caveats" rows="3"
+                placeholder="Enter High Court file number or warning text regarding the family inheritance disputes"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <button type="submit" class="btn btn-primary" id="btn-registry-submit">Register Title Reference</button>
+              <button type="button" class="btn" style="background-color: #475569; display: none;"
+                id="btn-registry-cancel" onclick="cancelRegistryEdit()">Cancel Edit</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container" style="margin-top: 30px;">
+          <h3>Registered Land Titles List</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title ID</th>
+                <th>TF Number</th>
+                <th>Registered Owner</th>
+                <th>Registered Date</th>
+                <th>Area (sqm)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="registry-table-body">
+              <tr>
+                <td colspan="7" class="text-center">Loading registered titles...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab 5: Payments -->
+      <section id="tab-payments" class="tab-pane">
+        <h2>Mobile Money & Orange money Payments</h2>
+        <p class="subtitle">Audit and reconcile incoming MTN Mobile Money and Orange Money payments</p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Payer Name</th>
+                <th>Payer Email</th>
+                <th>Amount (FCFA)</th>
+                <th>Method</th>
+                <th>Payment Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table">
+              <tr>
+                <td colspan="8" class="text-center">Loading transactions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab: Chats Moderator -->
+      <section id="tab-chats" class="tab-pane">
+        <h2>Active Conversations Moderator</h2>
+        <p class="subtitle">Monitor active communication channels and flag or delete scam reports</p>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Chat ID</th>
+                <th>Buyer Name</th>
+                <th>Agent Name</th>
+                <th>Property Ref</th>
+                <th>Last Msg</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-chats-table">
+              <tr>
+                <td colspan="6" class="text-center">Loading conversation channels...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" style="margin-top: 40px;">
+          <h3>Abuse & Scammer Reports</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Report ID</th>
+                <th>Conversation ID</th>
+                <th>Reporter</th>
+                <th>Reported User (Suspect)</th>
+                <th>Reason</th>
+                <th>Description</th>
+                <th>Suspect Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-reports-table">
+              <tr>
+                <td colspan="8" class="text-center">Loading abuse reports...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" style="margin-top: 40px;">
+          <h3>Sent Messages Log (All Database Entries)</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Msg ID</th>
+                <th>Chat ID</th>
+                <th>Sender</th>
+                <th>Recipient</th>
+                <th>Message Content</th>
+                <th>Type</th>
+                <th>Sent At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-messages-table">
+              <tr>
+                <td colspan="8" class="text-center">Loading message logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
